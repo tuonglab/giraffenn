@@ -4,10 +4,52 @@ from pathlib import Path
 import pandas as pd
 from torch_geometric.data import Data
 
+from ..utils._common_utils import safe_extract_tar_gz, tmp_root
 from ._build_graph import build_graph_from_edgelist
 from ._io import list_edge_txts, parse_edges, save_graphs_to_disk
 
 LOG = logging.getLogger(__name__)
+
+
+def generate_graphs_from_edge_dir_gz(
+    edge_dir_gz: Path | str,
+    pca_encoding: pd.DataFrame,
+    label: int,
+    save_to_disk: bool = False,
+    filename: str = "generated_graphs.pt",
+) -> list[Data]:
+    """
+    Build graphs from all edge list text files in a tar.gz archive.
+
+    Parameters
+    ----------
+    edge_dir_gz : pathlib.Path
+        Path to a tar.gz archive containing edge list .txt files.
+    pca_encoding : pandas.DataFrame
+        PCA encoding table indexed by single letter amino acids.
+
+    label : int
+        Integer class label attached to each graph.
+    save_to_disk : bool, optional
+        If True, the generated graphs are written to disk.
+    filename : str, optional
+        Output file name used when saving graphs to disk.
+
+    Returns
+    -------
+    list[torch_geometric.data.Data]
+        One graph per edge text file.
+    """
+    with tmp_root() as tmpdir:
+        safe_extract_tar_gz(edge_dir_gz, tmpdir)
+        graphs = generate_graphs_from_edge_dir(
+            tmpdir,
+            pca_encoding=pca_encoding,
+            label=label,
+            save_to_disk=save_to_disk,
+            filename=filename,
+        )
+    return graphs
 
 
 def generate_graphs_from_edge_dir(

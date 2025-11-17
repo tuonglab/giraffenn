@@ -61,6 +61,9 @@ def write_edges_file_for_pdb(
 
     structure = load_pdb_structure(pdb_path)
     text = edges_text(structure, cutoff)
+    if not text.strip():
+        logging.warning(f"No edges found for {pdb_path}, skipping file write")
+        return None
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file = out_dir / (pdb_path.with_suffix("").name + "_edge.txt")
     out_file.write_text(text)

@@ -11,6 +11,7 @@ from .evaluate.api import evaluate_model
 from .graph_gen.api import (
     generate_graph_from_edge_file,
     generate_graphs_from_edge_dir,
+    generate_graphs_from_edge_dir_gz,
 )
 from .graph_gen.encodings import load_pca_encoding
 from .models.gatv2 import GATv2
@@ -43,6 +44,7 @@ __all__ = [
     "generate_edges_from_tar_dir",
     "generate_graph_from_edge_file",
     "generate_graphs_from_edge_dir",
+    "generate_graphs_from_edge_dir_gz",
     "GATv2",
     "evaluate_model",
     "write_scores_to_txt",

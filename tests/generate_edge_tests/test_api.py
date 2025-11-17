@@ -1,10 +1,12 @@
 import types
+import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from tcrgnn.edge_gen import api
-from tcrgnn.edge_gen.api import generate_edges_from_pdb_file
+from tcrgnn.edge_gen.api import generate_edges_from_pdb_file, write_edges_file_for_pdb
 
 
 def test_write_edges_file_for_pdb_success(tmp_path, monkeypatch):
@@ -204,3 +206,29 @@ def test_generate_edges_from_pdb_file_raises_value_error_for_non_pdb(tmp_path: P
         generate_edges_from_pdb_file(not_pdb, tmp_path, cfg)
 
     assert "Not a PDB file" in str(exc.value)
+
+
+class TestWriteEdgesFileForPDB(unittest.TestCase):
+    @patch(
+        "tcrgnn.edge_gen.api.edges_text", return_value=""
+    )  # Mock edges_text to return empty
+    @patch("tcrgnn.edge_gen.api.load_pdb_structure")  # Mock load function
+    def test_empty_edges_logs_warning_and_skips_write(self, mock_load, mock_edges):
+        pdb_path = Path("test.pdb")
+        out_dir = Path("out")
+        cutoff = 5.0
+
+        # Create a temporary file for testing
+        pdb_path.touch()
+
+        with self.assertLogs(level="WARNING") as log:
+            result = write_edges_file_for_pdb(pdb_path, out_dir, cutoff)
+
+        # Verify that result is None
+        self.assertIsNone(result)
+
+        # Check that warning was logged
+        self.assertIn("No edges found for test.pdb, skipping file write", log.output[0])
+
+        # Clean up
+        pdb_path.unlink()
