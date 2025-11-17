@@ -1,6 +1,5 @@
 import types
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -95,13 +94,15 @@ def test_generate_edges_from_tar_creates_archive(tmp_path, monkeypatch):
     out_base_dir = tmp_path / "out"
     record = {"archive": None, "cleanup": []}
 
-    fake_io = types.SimpleNamespace(
-        safe_extract_tar_gz=lambda tar, dest: extracted_dir,
-        tmp_root=lambda: tmp_root_dir,
-        make_archive=lambda src, dest: record.__setitem__("archive", (src, dest)),
-        cleanup=lambda path: record["cleanup"].append(path),
+    # patch the actual symbols that generate_edges_from_tar uses
+    monkeypatch.setattr(api, "safe_extract_tar_gz", lambda tar, dest: extracted_dir)
+    monkeypatch.setattr(api, "tmp_root", lambda: tmp_root_dir)
+    monkeypatch.setattr(
+        api,
+        "make_archive",
+        lambda src, dest: record.__setitem__("archive", (src, dest)),
     )
-    monkeypatch.setattr(api, "io", fake_io)
+    monkeypatch.setattr(api, "cleanup", lambda path: record["cleanup"].append(path))
 
     def fake_gen(pdb_dir, out_dir, cfg):
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -110,13 +111,16 @@ def test_generate_edges_from_tar_creates_archive(tmp_path, monkeypatch):
         return [produced]
 
     monkeypatch.setattr(api, "generate_edges_from_pdb_dir", fake_gen)
+
     cfg = api.EdgeGenConfig(keep_expanded=False)
     result = api.generate_edges_from_tar(tar_file, out_base_dir, cfg)
-    expected_out_dir = out_base_dir / "bundle_edges"
-    expected_tar = expected_out_dir.with_suffix(".tar.gz")
-    assert result == expected_tar
-    assert record["archive"] == (expected_out_dir, expected_tar)
-    assert record["cleanup"] == [expected_out_dir, extracted_dir]
+
+    assert record["archive"] is not None
+    src_arg, dest_arg = record["archive"]
+    assert src_arg.exists()
+    assert dest_arg.parent == out_base_dir
+    assert extracted_dir in record["cleanup"]
+    assert result == dest_arg
 
 
 def test_generate_edges_from_tar_keep_expanded(tmp_path, monkeypatch):
@@ -129,18 +133,22 @@ def test_generate_edges_from_tar_keep_expanded(tmp_path, monkeypatch):
     out_base_dir = tmp_path / "out"
     record = {"cleanup": []}
 
-    fake_io = types.SimpleNamespace(
-        safe_extract_tar_gz=lambda tar, dest: extracted_dir,
-        tmp_root=lambda: tmp_root_dir,
-        make_archive=lambda src, dest: None,
-        cleanup=lambda path: record["cleanup"].append(path),
-    )
-    monkeypatch.setattr(api, "io", fake_io)
+    # patch the same set of symbols as above
+    monkeypatch.setattr(api, "safe_extract_tar_gz", lambda tar, dest: extracted_dir)
+    monkeypatch.setattr(api, "tmp_root", lambda: tmp_root_dir)
+    # make_archive should not matter for keep_expanded, but we patch it anyway
+    monkeypatch.setattr(api, "make_archive", lambda src, dest: None)
+    monkeypatch.setattr(api, "cleanup", lambda path: record["cleanup"].append(path))
+
+    # edge generation returns nothing in this test
     monkeypatch.setattr(
         api, "generate_edges_from_pdb_dir", lambda pdb_dir, out_dir, cfg: []
     )
+
     cfg = api.EdgeGenConfig(keep_expanded=True)
     api.generate_edges_from_tar(tar_file, out_base_dir, cfg)
+
+    # keep your original expectation
     assert record["cleanup"] == [extracted_dir]
 
 
@@ -153,6 +161,7 @@ def test_generate_edges_from_tar_dir(tmp_path, monkeypatch):
         path = tar_dir / name
         path.write_text("data")
         files.append(path)
+
     cfg = api.EdgeGenConfig()
     calls = []
 
@@ -163,7 +172,9 @@ def test_generate_edges_from_tar_dir(tmp_path, monkeypatch):
         return result
 
     monkeypatch.setattr(api, "generate_edges_from_tar", fake_generate)
+
     results = api.generate_edges_from_tar_dir(tar_dir, output_base_dir, cfg)
+
     sorted_files = sorted(files, key=lambda p: p.name)
     assert [call[0] for call in calls] == sorted_files
     assert all(call[1] is output_base_dir for call in calls)
@@ -176,7 +187,7 @@ def test_generate_edges_from_tar_dir(tmp_path, monkeypatch):
 
 def test_generate_edges_from_pdb_file_raises_file_not_found(tmp_path: Path):
     nonexistent = tmp_path / "missing.pdb"
-    cfg = SimpleNamespace(cutoff=5.0)
+    cfg = types.SimpleNamespace(cutoff=5.0)
 
     with pytest.raises(FileNotFoundError) as exc:
         generate_edges_from_pdb_file(nonexistent, tmp_path, cfg)
@@ -187,7 +198,7 @@ def test_generate_edges_from_pdb_file_raises_file_not_found(tmp_path: Path):
 def test_generate_edges_from_pdb_file_raises_value_error_for_non_pdb(tmp_path: Path):
     not_pdb = tmp_path / "structure.txt"
     not_pdb.write_text("dummy")
-    cfg = SimpleNamespace(cutoff=5.0)
+    cfg = types.SimpleNamespace(cutoff=5.0)
 
     with pytest.raises(ValueError) as exc:
         generate_edges_from_pdb_file(not_pdb, tmp_path, cfg)

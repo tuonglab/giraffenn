@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
+from ..utils._common_utils import cleanup, make_archive, safe_extract_tar_gz, tmp_root
 from . import _io as io
 from ._generate_edge import edges_text, load_pdb_structure
 
@@ -157,14 +158,14 @@ def generate_edges_from_tar(
     if isinstance(output_base_dir, str):
         output_base_dir = Path(output_base_dir)
     base = tar_file.with_suffix("").with_suffix("").name
-    pdb_dir = io.safe_extract_tar_gz(tar_file, io.tmp_root() / base)
+    pdb_dir = safe_extract_tar_gz(tar_file, tmp_root() / base)
     out_dir = output_base_dir / f"{base}_edges"
     _ = generate_edges_from_pdb_dir(pdb_dir, out_dir, cfg)
     out_tar = out_dir.with_suffix(".tar.gz")
-    io.make_archive(out_dir, out_tar)
+    make_archive(out_dir, out_tar)
     if not cfg.keep_expanded:
-        io.cleanup(out_dir)
-    io.cleanup(pdb_dir)
+        cleanup(out_dir)
+    cleanup(pdb_dir)
     return out_tar
 
 
