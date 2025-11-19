@@ -52,12 +52,18 @@ def test_plot_inv_logit_per_source_summary_and_saves(tmp_path, monkeypatch):
     def fake_savefig(path, *args, **kwargs):
         saved_paths.append(path)
 
+    def expected_backtransform(vals):
+        eps = 1e-7
+        p = np.array(vals).clip(eps, 1 - eps)
+        logits = np.log(p / (1 - p))
+        return float(charts.expit(np.mean(logits)))
+
     monkeypatch.setattr(charts.plt, "savefig", fake_savefig)
 
     df = pd.DataFrame(
         {
             "sequence": ["s1", "s2", "s3"],
-            "scores": [0.0, 2.0, -2.0],
+            "scores": [0.0, 0.88, 0.12],
             "source": ["A", "A", "B"],
         }
     )
@@ -65,8 +71,8 @@ def test_plot_inv_logit_per_source_summary_and_saves(tmp_path, monkeypatch):
     summary = charts.plot_inv_logit_per_source(df, save=True, out_dir=out_dir)
 
     expected_values = {
-        "A": float(np.mean(charts.expit(np.array([0.0, 2.0], dtype=float)))),
-        "B": float(charts.expit(-2.0)),
+        "A": expected_backtransform([0.0, 0.88]),
+        "B": expected_backtransform([0.12]),
     }
 
     assert out_dir.is_dir()
@@ -84,6 +90,12 @@ def test_plot_inv_logit_per_source_summary_and_saves(tmp_path, monkeypatch):
 
 
 def test_summarize_and_plot_inv_logit_means_outputs_and_save(tmp_path, monkeypatch):
+    def expected_backtransform(vals):
+        eps = 1e-7
+        p = np.array(vals).clip(eps, 1 - eps)
+        logits = np.log(p / (1 - p))
+        return float(charts.expit(np.mean(logits)))
+
     saved_paths = []
 
     def fake_savefig(path, *args, **kwargs):
@@ -115,26 +127,22 @@ def test_summarize_and_plot_inv_logit_means_outputs_and_save(tmp_path, monkeypat
             {
                 "source": "A",
                 "group": "Cancer",
-                "inv_logit_mean": float(
-                    np.mean(charts.expit(np.array([0.0, 1.0], dtype=float)))
-                ),
+                "inv_logit_mean": expected_backtransform(np.array([0.0, 1.0], float)),
             },
             {
                 "source": "B",
                 "group": "Cancer",
-                "inv_logit_mean": float(charts.expit(-1.0)),
+                "inv_logit_mean": expected_backtransform(np.array([-1.0], float)),
             },
             {
                 "source": "B",
                 "group": "Control",
-                "inv_logit_mean": float(
-                    np.mean(charts.expit(np.array([0.5, 1.5], dtype=float)))
-                ),
+                "inv_logit_mean": expected_backtransform(np.array([0.5, 1.5], float)),
             },
             {
                 "source": "A",
                 "group": "Control",
-                "inv_logit_mean": float(charts.expit(-0.5)),
+                "inv_logit_mean": expected_backtransform(np.array([-0.5], float)),
             },
         ]
     )
@@ -142,13 +150,21 @@ def test_summarize_and_plot_inv_logit_means_outputs_and_save(tmp_path, monkeypat
         [
             {
                 "source": "A",
-                "Cancer": expected_long.iloc[0]["inv_logit_mean"],
-                "Control": expected_long.iloc[3]["inv_logit_mean"],
+                "Cancer": expected_long.query("source == 'A' and group == 'Cancer'")[
+                    "inv_logit_mean"
+                ].item(),
+                "Control": expected_long.query("source == 'A' and group == 'Control'")[
+                    "inv_logit_mean"
+                ].item(),
             },
             {
                 "source": "B",
-                "Cancer": expected_long.iloc[1]["inv_logit_mean"],
-                "Control": expected_long.iloc[2]["inv_logit_mean"],
+                "Cancer": expected_long.query("source == 'B' and group == 'Cancer'")[
+                    "inv_logit_mean"
+                ].item(),
+                "Control": expected_long.query("source == 'B' and group == 'Control'")[
+                    "inv_logit_mean"
+                ].item(),
             },
         ]
     )

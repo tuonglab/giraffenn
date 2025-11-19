@@ -6,7 +6,7 @@ from torch_geometric.data import Data
 
 from ..utils._common_utils import safe_extract_tar_gz, tmp_root
 from ._build_graph import build_graph_from_edgelist
-from ._io import list_edge_txts, parse_edges, save_graphs_to_disk
+from ._io import clean_edge_files, list_edge_txts, parse_edges, save_graphs_to_disk
 
 LOG = logging.getLogger(__name__)
 
@@ -42,6 +42,7 @@ def generate_graphs_from_edge_dir_gz(
     """
     with tmp_root() as tmpdir:
         safe_extract_tar_gz(edge_dir_gz, tmpdir)
+        clean_edge_files(tmpdir)
         graphs = generate_graphs_from_edge_dir(
             tmpdir,
             pca_encoding=pca_encoding,

@@ -90,31 +90,47 @@ def plot_inv_logit_per_source(
     out_dir: str | Path | None = None,
 ) -> pd.DataFrame:
     """
-    Compute inverse logit per row, summarize per source, and plot distribution and means.
+    Compute logit per row from probabilities, summarize per source on the logit scale,
+    then transform the mean logits back to probabilities and plot distributions.
 
-    Expects columns sequence, scores, source. Produces a boxplot of per row inv logit
-    by source and a scatterplot of per source means.
+    Expects columns sequence, scores, source.
+    Produces:
+      - a boxplot of per row probabilities by source
+      - a scatterplot of per source mean logit-transformed probabilities
+        mapped back to probability space.
 
     Args:
-        df: Input table with columns sequence, scores, source.
+        df: Input table with columns sequence, scores (probabilities), source.
         save: If True, save plots into out_dir.
         out_dir: Directory to write figures when save is True.
 
     Returns:
         DataFrame with columns source and inv_logit_mean, sorted by mean descending.
+        inv_logit_mean is expit(mean_logit) per source.
     """
     required = {"sequence", "scores", "source"}
     if not required.issubset(df.columns):
         raise ValueError(f"Input DataFrame must contain columns: {required}")
 
     df = df.copy()
-    df["inv_logit"] = expit(df["scores"].astype(float))
+
+    # scores are probabilities in [0, 1], so clip before logit
+    eps = 1e-7
+    probs = df["scores"].astype(float).clip(eps, 1 - eps)
+    df["prob"] = probs
+    df["logit"] = np.log(probs / (1.0 - probs))
+
+    # summarize on logit scale, then transform back
+    summary = (
+        df.groupby("source", as_index=False)["logit"]
+        .mean()
+        .rename(columns={"logit": "mean_logit"})
+    )
+    summary["inv_logit_mean"] = expit(summary["mean_logit"])
 
     summary = (
-        df.groupby("source", as_index=False)["inv_logit"]
-        .mean()
-        .rename(columns={"inv_logit": "inv_logit_mean"})
-        .sort_values("inv_logit_mean", ascending=False)
+        summary[["source", "inv_logit_mean"]]
+        .sort_values("inv_logit_mean")
         .reset_index(drop=True)
     )
 
@@ -124,11 +140,11 @@ def plot_inv_logit_per_source(
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
 
-    # boxplot
+    # boxplot of per row probabilities per source
     fig1 = plt.figure(figsize=(24, 10))
-    sns.boxplot(data=df, x="source", y="inv_logit", orientation="vertical")
-    plt.title("Inverse Logit Score Distribution per Source")
-    plt.ylabel("Inverse logit score")
+    sns.boxplot(data=df, x="source", y="prob", orientation="vertical")
+    plt.title("Per sequence probability distribution per source")
+    plt.ylabel("Probability")
     plt.xticks(rotation=30)
     plt.tight_layout()
 
@@ -137,11 +153,11 @@ def plot_inv_logit_per_source(
     plt.show()
     plt.close(fig1)
 
-    # scatterplot of means
+    # scatterplot of per source mean logits mapped back to probability
     fig2 = plt.figure(figsize=(24, 10))
     sns.scatterplot(data=summary, x="source", y="inv_logit_mean", s=200)
-    plt.title("Inverse Logit Mean per Source")
-    plt.ylabel("Inverse logit mean")
+    plt.title("Per source mean logit (back-transformed to probability)")
+    plt.ylabel("Mean probability (from mean logit)")
     plt.xlabel("Source")
     plt.xticks(rotation=30)
     plt.tight_layout()
@@ -164,11 +180,12 @@ def summarize_and_plot_inv_logit_means(
     out_dir: str | Path | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Summarize inverse logit means per source for two groups and plot a boxplot.
+    Summarize mean logits per source for two groups, transform back to probability,
+    and plot a boxplot of the per source back-transformed means.
 
     Args:
-        cancer_df: Table for the positive group with columns sequence, scores, source.
-        control_df: Table for the negative group with columns sequence, scores, source.
+        cancer_df: Table for the positive group with columns sequence, scores (prob), source.
+        control_df: Table for the negative group with columns sequence, scores (prob), source.
         save: If True, save the boxplot in out_dir.
         out_dir: Directory to write the figure when save is True.
 
@@ -185,21 +202,33 @@ def summarize_and_plot_inv_logit_means(
     c_df = cancer_df.copy()
     n_df = control_df.copy()
 
-    c_df["inv_logit"] = expit(c_df["scores"].astype(float))
-    n_df["inv_logit"] = expit(n_df["scores"].astype(float))
+    eps = 1e-7
 
+    # cancer group
+    c_probs = c_df["scores"].astype(float).clip(eps, 1 - eps)
+    c_df["prob"] = c_probs
+    c_df["logit"] = np.log(c_probs / (1.0 - c_probs))
+
+    # control group
+    n_probs = n_df["scores"].astype(float).clip(eps, 1 - eps)
+    n_df["prob"] = n_probs
+    n_df["logit"] = np.log(n_probs / (1.0 - n_probs))
+
+    # summarize on logit scale and back-transform
     c_summary = (
-        c_df.groupby("source", as_index=False)["inv_logit"]
+        c_df.groupby("source", as_index=False)["logit"]
         .mean()
-        .rename(columns={"inv_logit": "inv_logit_mean"})
+        .rename(columns={"logit": "mean_logit"})
     )
+    c_summary["inv_logit_mean"] = expit(c_summary["mean_logit"])
     c_summary["group"] = "Cancer"
 
     n_summary = (
-        n_df.groupby("source", as_index=False)["inv_logit"]
+        n_df.groupby("source", as_index=False)["logit"]
         .mean()
-        .rename(columns={"inv_logit": "inv_logit_mean"})
+        .rename(columns={"logit": "mean_logit"})
     )
+    n_summary["inv_logit_mean"] = expit(n_summary["mean_logit"])
     n_summary["group"] = "Control"
 
     summary_long = (
@@ -228,8 +257,8 @@ def summarize_and_plot_inv_logit_means(
     sns.boxplot(
         data=summary_long, x="group", y="inv_logit_mean", orientation="vertical"
     )
-    plt.title("Per Source Inverse Logit Means: Cancer vs Control")
-    plt.ylabel("Inverse logit mean per source")
+    plt.title("Per source mean logit (back-transformed): Cancer vs Control")
+    plt.ylabel("Mean probability per source (from mean logit)")
     plt.xlabel("")
     plt.tight_layout()
 
@@ -238,7 +267,6 @@ def summarize_and_plot_inv_logit_means(
             out_dir / "inv_logit_mean_cancer_vs_control_boxplot.png",  # type: ignore[operator]
             bbox_inches="tight",
         )
-    plt.show()
     plt.show()
 
     return summary_long, summary_wide

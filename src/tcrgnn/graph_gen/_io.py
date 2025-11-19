@@ -39,3 +39,12 @@ def save_graphs_to_disk(graphs, file: Path | str) -> None:
     import torch
 
     torch.save(graphs, str(file))
+
+
+def clean_edge_files(edge_dir: Path | str) -> None:
+    for p in list_edge_txts(edge_dir):
+        if not p.exists():
+            continue
+        if p.stat().st_size == 0:
+            print(f"[CLEANUP] Removing empty file: {p}")
+            p.unlink()
