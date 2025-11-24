@@ -12,3 +12,5 @@ pdm.lock
 docs/build
 cancer_test_data_scores.txt
 control_test_data_scores.txt
+*.out
+*.error
