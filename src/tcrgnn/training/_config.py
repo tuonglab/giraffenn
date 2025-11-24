@@ -59,4 +59,4 @@ class TrainConfig:
     min_delta_loss: float = 0.01
     min_delta_acc: float = 0.01
     batch_size: int = 256
-    seed: int = 111
+    seed: int = 42

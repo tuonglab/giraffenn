@@ -25,33 +25,46 @@ def train(
     device: torch.device,
 ) -> None:
     """
-    Train a GNN with early stopping based on loss and accuracy improvements.
-
-    Assumptions
-        - samples is a list of samples, where each sample is a list of PyG Data objects
-        - the model forward signature is model(x, edge_index, batch) and returns logits of shape [B, 2]
-        - data.y is a binary label tensor of shape [B]
-
-    Args:
-        model: Torch module producing two class logits per graph.
-        samples: List of samples, where each sample is a list of PyG Data.
-        cfg: Training configuration hyperparameters.
-        save_path: Paths helper; best_path is used to save the best state dict.
-        device: Compute device.
-
-    Returns:
-        None
+    Sequence level training with soft positive labels to avoid forcing
+    all cancer sample sequences to be strong 1.
     """
+
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     model.to(device)
 
-    criterion = torch.nn.BCEWithLogitsLoss()
+    # count positives and negatives at sequence level
+    n_pos = 0
+    n_neg = 0
+    for sample in samples:
+        for data in sample:
+            y = data.y.view(-1)
+            n_pos += int((y == 1).sum().item())
+            n_neg += int((y == 0).sum().item())
+
+    total = n_pos + n_neg
+    print(f"sequences: total={total}, pos={n_pos}, neg={n_neg}")
+
+    if n_pos == 0:
+        pos_weight_value = 1.0
+        print("warning: no positive sequences found, using pos_weight=1.0")
+    else:
+        pos_weight_value = n_neg / float(n_pos)
+
+    print(f"using pos_weight={pos_weight_value:.4f}")
+
+    pos_weight = torch.tensor([pos_weight_value], dtype=torch.float32, device=device)
+
+    # option 2: soft positive labels
+    pos_target_value = 0.6
+
+    # BCE with per sequence pos_weight
+    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+
     optim = torch.optim.AdamW(
         model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay
     )
 
-    # Keep your batching scheme: each batch item is a list[Data]
     pin = device.type == "cuda"
     loader = DataLoader(
         samples, batch_size=cfg.batch_size, shuffle=True, pin_memory=pin
@@ -66,21 +79,35 @@ def train(
         total_samples = 0
 
         for sample in loader:
-            # each sample is a list[Data]
             for data in sample:
                 data = data.to(device, non_blocking=pin)
 
+                logits = model(data.x, data.edge_index, data.batch)[:, 1]  # [B]
+
+                raw_targets = data.y.float().view_as(logits)
+
+                # use soft labels to avoid forcing all positives to 1.0:
+                targets = torch.where(
+                    raw_targets == 1.0,
+                    torch.full_like(raw_targets, pos_target_value),
+                    torch.zeros_like(raw_targets),
+                )
+
                 optim.zero_grad()
-                logits = model(data.x, data.edge_index, data.batch)[:, 1]  # shape [B]
-                loss = criterion(logits, data.y.float())
+                loss = criterion(logits, targets)
                 loss.backward()
                 optim.step()
 
                 with torch.no_grad():
-                    bs = data.y.size(0)
+                    bs = targets.size(0)
                     total_loss += loss.item() * bs
-                    pred = torch.round(torch.sigmoid(logits))
-                    total_correct += (pred == data.y).sum().item()
+
+                    probs = torch.sigmoid(logits)
+
+                    hard_labels = raw_targets
+                    pred = torch.round(probs)
+
+                    total_correct += (pred == hard_labels).sum().item()
                     total_samples += bs
 
         avg_loss = total_loss / max(total_samples, 1)
