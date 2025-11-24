@@ -14,3 +14,4 @@ cancer_test_data_scores.txt
 control_test_data_scores.txt
 *.out
 *.error
+new_results

@@ -32,7 +32,7 @@ def test_trainconfig_defaults():
     assert cfg.min_delta_loss == 0.01
     assert cfg.min_delta_acc == 0.01
     assert cfg.batch_size == 256
-    assert cfg.seed == 111
+    assert cfg.seed == 42
 
 
 def test_trainconfig_custom_values():
