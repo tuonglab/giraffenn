@@ -17,9 +17,9 @@ cfg = TrainConfig(
     batch_size=256,  # demonstration purpose only; use higher epochs for real training
 )  # customise your training configuration here if neccessary
 
-os.makedirs("custom_loss_model_val", exist_ok=True)
+os.makedirs("soft_label_model", exist_ok=True)
 save_path = TrainPaths(
-    model_dir="custom_loss_model_val",
+    model_dir="soft_label_model",
     best_name="best_model.pt",
 )
 

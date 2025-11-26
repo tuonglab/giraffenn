@@ -4,11 +4,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tcrgnn import evaluate_model, load_test_file, write_scores_to_txt
+from tcrgnn import evaluate_model, load_test_file
 
-MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/custom_loss_model_val/best_model.pt"
-t1d_graphs_dir = Path("test_data_v2/temp_t1d/processed")
-OUT_CSV = Path("temp_t1d_sample_scores.csv")
+MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/research_scripts/soft_label_model/best_model.pt"
+t1d_graphs_dir = Path(
+    "/scratch/project/tcr_ml/gnn_release/test_data_v2/seekgene/processed"
+)
+OUT_CSV = Path("seekgene_sample_scores.csv")
 
 
 def process_control_file(control_file: Path):
@@ -22,10 +24,10 @@ def process_control_file(control_file: Path):
         evaluate_model(MODEL_FILE, control_sample_data)
     )
 
-    out_dir = Path("results/temp_t1d")
-    out_dir.mkdir(exist_ok=True)
-    out_path = out_dir / control_file.with_suffix(".scores.txt").name
-    write_scores_to_txt(control_sample_scores, out_path)
+    # out_dir = Path("results/aml_zero")
+    # out_dir.mkdir(exist_ok=True)
+    # out_path = out_dir / control_file.with_suffix(".scores.txt").name
+    # write_scores_to_txt(control_sample_scores, out_path)
 
     seqs = [getattr(g, "original_characters", None) for g in control_sample_data]
     n = len(seqs)
@@ -43,6 +45,8 @@ def process_control_file(control_file: Path):
 
 
 if __name__ == "__main__":
+    if OUT_CSV.exists():
+        OUT_CSV.unlink()  # delete the file
     control_files = sorted(p for p in t1d_graphs_dir.iterdir() if p.is_file())
 
     # Do NOT use Pool when using CUDA
