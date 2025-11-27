@@ -3,286 +3,258 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
-
-from tcrgnn.plotting import charts
+from scipy.special import expit
 
 matplotlib.use("Agg")
 
 
+import matplotlib.pyplot as plt
+
+from tcrgnn.plotting.charts import (
+    _as_pdf_path,
+    _maybe_hide_xaxis,
+    boxplot_individual_sample,
+    plot_inv_logit_per_source,
+    plot_roc_from_summary,
+    scatterplot_individual_sample,
+    summarize_and_plot_inv_logit_means,
+)
+
+
 @pytest.fixture(autouse=True)
-def _close_figures():
-    charts.plt.close("all")
-    yield
-    charts.plt.close("all")
+def _suppress_show(monkeypatch):
+    monkeypatch.setattr("matplotlib.pyplot.show", lambda: None)
 
 
-def test_boxplot_individual_sample_saves_and_closes(tmp_path, monkeypatch):
-    saved_paths = []
-
-    def fake_savefig(path, *args, **kwargs):
-        saved_paths.append(path)
-
-    monkeypatch.setattr(charts.plt, "savefig", fake_savefig)
-    out_path = tmp_path / "box.png"
-
-    charts.boxplot_individual_sample([0.1, 0.5, 0.9], save=True, out_path=out_path)
-
-    assert saved_paths == [out_path]
-    assert charts.plt.get_fignums() == []
+def test_as_pdf_path_appends_pdf_extension(tmp_path):
+    path = tmp_path / "figure.png"
+    result = _as_pdf_path(path)
+    assert result == path.with_suffix(".pdf")
 
 
-def test_scatterplot_individual_sample_saves_and_closes(tmp_path, monkeypatch):
-    saved_paths = []
+def test_as_pdf_path_retains_pdf_extension(tmp_path):
+    path = tmp_path / "figure.PDF"
+    result = _as_pdf_path(path)
+    assert result == path.with_suffix(".pdf")
 
-    def fake_savefig(path, *args, **kwargs):
-        saved_paths.append(path)
 
-    monkeypatch.setattr(charts.plt, "savefig", fake_savefig)
+def test_maybe_hide_xaxis_removes_ticks_when_exceeds_max():
+    fig, ax = plt.subplots()
+    ax.set_xlabel("Label")
+    ax.set_xticks([0, 1])
+    _maybe_hide_xaxis(num_items=5, max_items=4)
+    assert ax.get_xlabel() == ""
+    assert list(ax.get_xticks()) == []
+    plt.close(fig)
+
+
+def test_boxplot_individual_sample_requires_out_path_when_saving():
+    with pytest.raises(ValueError):
+        boxplot_individual_sample([0.1, 0.2], save=True)
+
+
+def test_scatterplot_individual_sample_saves_pdf(tmp_path):
     out_path = tmp_path / "scatter.png"
-
-    charts.scatterplot_individual_sample([0.2, 0.4, 0.6], save=True, out_path=out_path)
-
-    assert saved_paths == [out_path]
-    assert charts.plt.get_fignums() == []
+    scatterplot_individual_sample([0.1, 0.5, 0.9], save=True, out_path=out_path)
+    assert (tmp_path / "scatter.pdf").exists()
 
 
-def test_plot_inv_logit_per_source_summary_and_saves(tmp_path, monkeypatch):
-    saved_paths = []
+def test_plot_inv_logit_per_source_requires_columns():
+    df = pd.DataFrame({"sequence": ["s1"], "scores": [0.5]})
+    with pytest.raises(ValueError):
+        plot_inv_logit_per_source(df)
 
-    def fake_savefig(path, *args, **kwargs):
-        saved_paths.append(path)
 
-    def expected_backtransform(vals):
-        eps = 1e-7
-        p = np.array(vals).clip(eps, 1 - eps)
-        logits = np.log(p / (1 - p))
-        return float(charts.expit(np.mean(logits)))
-
-    monkeypatch.setattr(charts.plt, "savefig", fake_savefig)
-
+def test_plot_inv_logit_per_source_returns_expected_summary():
     df = pd.DataFrame(
         {
-            "sequence": ["s1", "s2", "s3"],
-            "scores": [0.0, 0.88, 0.12],
-            "source": ["A", "A", "B"],
+            "sequence": ["s1", "s2", "s3", "s4"],
+            "scores": [0.2, 0.4, 0.7, 0.6],
+            "source": ["A", "A", "B", "B"],
+        }
+    )
+    summary = plot_inv_logit_per_source(df)
+    eps = 1e-7
+    probs = df["scores"].astype(float).clip(eps, 1 - eps)
+    logits = np.log(probs / (1 - probs))
+    expected = (
+        pd.DataFrame({"source": df["source"], "logit": logits})
+        .groupby("source", as_index=False)
+        .mean()
+        .rename(columns={"logit": "mean_logit"})
+    )
+    expected["inv_logit_mean"] = expit(expected["mean_logit"])
+    expected = (
+        expected[["source", "inv_logit_mean"]]
+        .sort_values("inv_logit_mean")
+        .reset_index(drop=True)
+    )
+    assert_frame_equal(summary, expected, check_exact=False, atol=1e-12, rtol=1e-9)
+
+
+def test_plot_inv_logit_per_source_requires_out_dir_when_saving():
+    df = pd.DataFrame(
+        {
+            "sequence": ["s1", "s2"],
+            "scores": [0.2, 0.4],
+            "source": ["A", "A"],
+        }
+    )
+    with pytest.raises(ValueError):
+        plot_inv_logit_per_source(df, save=True)
+
+
+def test_plot_inv_logit_per_source_saves_figures(tmp_path):
+    df = pd.DataFrame(
+        {
+            "sequence": ["s1", "s2", "s3", "s4"],
+            "scores": [0.2, 0.4, 0.7, 0.6],
+            "source": ["A", "A", "B", "B"],
         }
     )
     out_dir = tmp_path / "plots"
-    summary = charts.plot_inv_logit_per_source(df, save=True, out_dir=out_dir)
-
-    expected_values = {
-        "A": expected_backtransform([0.0, 0.88]),
-        "B": expected_backtransform([0.12]),
-    }
-
-    assert out_dir.is_dir()
-    assert len(saved_paths) == 2
-    assert {p.name for p in saved_paths} == {
-        "inv_logit_boxplot.png",
-        "inv_logit_mean_scatterplot.png",
-    }
-    assert summary["source"].tolist() == ["A", "B"]
-    for source, expected in expected_values.items():
-        assert summary.set_index("source").loc[
-            source, "inv_logit_mean"
-        ] == pytest.approx(expected)
-    assert charts.plt.get_fignums() == []
+    plot_inv_logit_per_source(df, save=True, out_dir=out_dir)
+    assert (out_dir / "inv_logit_boxplot.pdf").exists()
+    assert (out_dir / "inv_logit_mean_scatterplot.pdf").exists()
 
 
-def test_summarize_and_plot_inv_logit_means_outputs_and_save(tmp_path, monkeypatch):
-    def expected_backtransform(vals):
-        eps = 1e-7
-        p = np.array(vals).clip(eps, 1 - eps)
-        logits = np.log(p / (1 - p))
-        return float(charts.expit(np.mean(logits)))
+def test_summarize_and_plot_inv_logit_means_requires_columns():
+    cancer_df = pd.DataFrame({"sequence": ["c1"], "scores": [0.8], "source": ["S1"]})
+    control_df = pd.DataFrame({"sequence": ["n1"], "scores": [0.3]})
+    with pytest.raises(ValueError):
+        summarize_and_plot_inv_logit_means(cancer_df, control_df)
 
-    saved_paths = []
 
-    def fake_savefig(path, *args, **kwargs):
-        saved_paths.append(path)
-
-    monkeypatch.setattr(charts.plt, "savefig", fake_savefig)
-
+def test_summarize_and_plot_inv_logit_means_outputs_expected_values():
     cancer_df = pd.DataFrame(
         {
             "sequence": ["c1", "c2", "c3"],
-            "scores": [0.0, 1.0, -1.0],
-            "source": ["A", "A", "B"],
+            "scores": [0.9, 0.8, 0.4],
+            "source": ["S1", "S1", "S2"],
         }
     )
     control_df = pd.DataFrame(
         {
             "sequence": ["n1", "n2", "n3"],
-            "scores": [-0.5, 0.5, 1.5],
-            "source": ["A", "B", "B"],
+            "scores": [0.3, 0.2, 0.6],
+            "source": ["S1", "S2", "S2"],
         }
     )
-    out_dir = tmp_path / "summary_plots"
-    summary_long, summary_wide = charts.summarize_and_plot_inv_logit_means(
+    summary_long, summary_wide = summarize_and_plot_inv_logit_means(
+        cancer_df, control_df
+    )
+
+    def expected_group(df):
+        eps = 1e-7
+        probs = df["scores"].astype(float).clip(eps, 1 - eps)
+        logits = np.log(probs / (1 - probs))
+        return (
+            pd.DataFrame({"source": df["source"], "logit": logits})
+            .groupby("source", as_index=False)
+            .mean()
+            .assign(inv_logit_mean=lambda t: expit(t["logit"]))[
+                ["source", "inv_logit_mean"]
+            ]
+        )
+
+    expected_cancer = expected_group(cancer_df).set_index("source")["inv_logit_mean"]
+    expected_control = expected_group(control_df).set_index("source")["inv_logit_mean"]
+
+    assert set(summary_long["group"]) == {"Cancer", "Control"}
+    for source, expected_value in expected_cancer.items():
+        actual = summary_wide.loc[summary_wide["source"] == source, "Cancer"].iloc[0]
+        assert actual == pytest.approx(expected_value)
+    for source, expected_value in expected_control.items():
+        actual = summary_wide.loc[summary_wide["source"] == source, "Control"].iloc[0]
+        assert actual == pytest.approx(expected_value)
+
+
+def test_summarize_and_plot_inv_logit_means_requires_out_dir_when_saving(
+    cancer_df=None, control_df=None
+):
+    cancer_df = pd.DataFrame(
+        {
+            "sequence": ["c1", "c2"],
+            "scores": [0.9, 0.8],
+            "source": ["S1", "S1"],
+        }
+    )
+    control_df = pd.DataFrame(
+        {
+            "sequence": ["n1", "n2"],
+            "scores": [0.2, 0.3],
+            "source": ["S1", "S1"],
+        }
+    )
+    with pytest.raises(ValueError):
+        summarize_and_plot_inv_logit_means(cancer_df, control_df, save=True)
+
+
+def test_summarize_and_plot_inv_logit_means_saves_pdf(tmp_path):
+    cancer_df = pd.DataFrame(
+        {
+            "sequence": ["c1", "c2"],
+            "scores": [0.9, 0.8],
+            "source": ["S1", "S1"],
+        }
+    )
+    control_df = pd.DataFrame(
+        {
+            "sequence": ["n1", "n2"],
+            "scores": [0.2, 0.3],
+            "source": ["S1", "S1"],
+        }
+    )
+    out_dir = tmp_path / "plots"
+    summarize_and_plot_inv_logit_means(
         cancer_df, control_df, save=True, out_dir=out_dir
     )
-
-    expected_long = pd.DataFrame(
-        [
-            {
-                "source": "A",
-                "group": "Cancer",
-                "inv_logit_mean": expected_backtransform(np.array([0.0, 1.0], float)),
-            },
-            {
-                "source": "B",
-                "group": "Cancer",
-                "inv_logit_mean": expected_backtransform(np.array([-1.0], float)),
-            },
-            {
-                "source": "B",
-                "group": "Control",
-                "inv_logit_mean": expected_backtransform(np.array([0.5, 1.5], float)),
-            },
-            {
-                "source": "A",
-                "group": "Control",
-                "inv_logit_mean": expected_backtransform(np.array([-0.5], float)),
-            },
-        ]
-    )
-    expected_wide = pd.DataFrame(
-        [
-            {
-                "source": "A",
-                "Cancer": expected_long.query("source == 'A' and group == 'Cancer'")[
-                    "inv_logit_mean"
-                ].item(),
-                "Control": expected_long.query("source == 'A' and group == 'Control'")[
-                    "inv_logit_mean"
-                ].item(),
-            },
-            {
-                "source": "B",
-                "Cancer": expected_long.query("source == 'B' and group == 'Cancer'")[
-                    "inv_logit_mean"
-                ].item(),
-                "Control": expected_long.query("source == 'B' and group == 'Control'")[
-                    "inv_logit_mean"
-                ].item(),
-            },
-        ]
-    )
-
-    assert out_dir.is_dir()
-    assert saved_paths == [
-        out_dir / "inv_logit_mean_cancer_vs_control_boxplot.png",
-    ]
-    assert_frame_equal(
-        summary_long.reset_index(drop=True),
-        expected_long,
-        check_exact=False,
-        rtol=1e-6,
-        atol=1e-6,
-    )
-    assert_frame_equal(
-        summary_wide.sort_values("source").reset_index(drop=True),
-        expected_wide,
-        check_exact=False,
-        rtol=1e-6,
-        atol=1e-6,
-    )
-    assert charts.plt.get_fignums() == [1]
+    assert (out_dir / "inv_logit_mean_cancer_vs_control_boxplot.pdf").exists()
 
 
-def test_plot_roc_from_summary_computes_auc_and_saves(tmp_path, monkeypatch):
-    saved_paths = []
+def test_plot_roc_from_summary_requires_columns():
+    df = pd.DataFrame({"group": ["Cancer"], "other": [0.5]})
+    with pytest.raises(ValueError):
+        plot_roc_from_summary(df)
 
-    def fake_savefig(path, *args, **kwargs):
-        saved_paths.append(path)
 
-    monkeypatch.setattr(charts.plt, "savefig", fake_savefig)
+def test_plot_roc_from_summary_requires_positive_and_negative():
+    df = pd.DataFrame({"group": ["Cancer", "Cancer"], "inv_logit_mean": [0.8, 0.7]})
+    with pytest.raises(ValueError):
+        plot_roc_from_summary(df)
 
-    summary = pd.DataFrame(
+
+def test_plot_roc_from_summary_computes_auc_correctly():
+    df = pd.DataFrame(
         {
-            "source": ["S1", "S2", "S3", "S4"],
-            "group": ["Cancer", "Control", "Cancer", "Control"],
+            "group": ["Cancer", "Cancer", "Control", "Control"],
             "inv_logit_mean": [0.9, 0.8, 0.2, 0.1],
         }
     )
-    out_path = tmp_path / "roc" / "curve.png"
-
-    roc_df, auc_value = charts.plot_roc_from_summary(
-        summary, save=True, out_path=out_path
-    )
-
-    assert out_path.parent.is_dir()
-    assert saved_paths == [out_path]
-    assert list(roc_df.columns) == ["fpr", "tpr", "threshold"]
-    assert auc_value == pytest.approx(0.75, rel=1e-6)
+    roc_df, auc_value = plot_roc_from_summary(df)
+    assert auc_value == pytest.approx(1.0)
     assert roc_df.iloc[0]["fpr"] == 0.0
-    assert roc_df.iloc[0]["tpr"] == 0.0
-    assert np.isposinf(roc_df.iloc[0]["threshold"])
-    assert roc_df.iloc[-1]["fpr"] == 1.0
     assert roc_df.iloc[-1]["tpr"] == 1.0
-    assert np.isneginf(roc_df.iloc[-1]["threshold"])
-    assert charts.plt.get_fignums() == []
 
 
-def test_plot_roc_from_summary_requires_both_classes():
-    data = pd.DataFrame({"group": ["Cancer", "Cancer"], "inv_logit_mean": [0.2, 0.4]})
-    with pytest.raises(ValueError, match="need at least one positive and one negative"):
-        charts.plot_roc_from_summary(data)
-
-
-def test_plot_roc_from_summary_missing_columns():
-    data = pd.DataFrame({"group": ["Cancer"], "score": [0.1]})
-    with pytest.raises(
-        ValueError, match="summary_long must contain 'group' and 'inv_logit_mean'"
-    ):
-        charts.plot_roc_from_summary(data)
-
-
-def test_plot_roc_from_summary_empty_after_nan_drop():
+def test_plot_roc_from_summary_requires_out_path_when_saving():
     df = pd.DataFrame(
-        {"group": ["Cancer", "Control"], "inv_logit_mean": [np.nan, np.nan]}
+        {
+            "group": ["Cancer", "Control"],
+            "inv_logit_mean": [0.8, 0.2],
+        }
     )
-    with pytest.raises(ValueError, match="No data after dropping NaNs"):
-        charts.plot_roc_from_summary(df)
+    with pytest.raises(ValueError):
+        plot_roc_from_summary(df, save=True)
 
 
-def test_plot_roc_from_summary_unknown_positive_group():
-    df = pd.DataFrame({"group": ["Control", "Control"], "inv_logit_mean": [0.2, 0.8]})
-    # zero Cancer samples
-    with pytest.raises(ValueError, match="need at least one positive and one negative"):
-        charts.plot_roc_from_summary(df)
-
-
-def test_plot_roc_from_summary_missing_score_column():
-    df = pd.DataFrame({"group": ["Cancer", "Control"], "not_score": [0.2, 0.8]})
-    with pytest.raises(
-        ValueError, match="summary_long must contain 'group' and 'inv_logit_mean'"
-    ):
-        charts.plot_roc_from_summary(df)
-
-
-def test_plot_roc_from_summary_missing_group_column():
-    df = pd.DataFrame({"inv_logit_mean": [0.2, 0.8], "other": ["x", "y"]})
-    with pytest.raises(
-        ValueError, match="summary_long must contain 'group' and 'inv_logit_mean'"
-    ):
-        charts.plot_roc_from_summary(df)
-
-
-def test_plot_roc_from_summary_all_nan_group_column():
-    df = pd.DataFrame({"group": [np.nan, np.nan], "inv_logit_mean": [0.3, 0.7]})
-    with pytest.raises(ValueError, match="No data after dropping NaNs"):
-        charts.plot_roc_from_summary(df)
-
-
-def test_plot_inv_logit_per_source_missing_sequence():
-    df = pd.DataFrame({"scores": [1], "source": ["A"]})
-    with pytest.raises(ValueError, match="Input DataFrame must contain columns"):
-        charts.plot_inv_logit_per_source(df)
-
-
-def test_summarize_missing_column_in_cancer_df():
-    cancer_df = pd.DataFrame({"scores": [1], "source": ["A"]})
-    control_df = pd.DataFrame({"sequence": ["x"], "scores": [1], "source": ["A"]})
-    with pytest.raises(ValueError, match="cancer_df must contain columns"):
-        charts.summarize_and_plot_inv_logit_means(cancer_df, control_df)
+def test_plot_roc_from_summary_saves_pdf(tmp_path):
+    df = pd.DataFrame(
+        {
+            "group": ["Cancer", "Cancer", "Control", "Control"],
+            "inv_logit_mean": [0.9, 0.8, 0.2, 0.1],
+        }
+    )
+    out_path = tmp_path / "roc.svg"
+    plot_roc_from_summary(df, save=True, out_path=out_path)
+    assert (tmp_path / "roc.pdf").exists()

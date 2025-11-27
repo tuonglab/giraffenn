@@ -10,6 +10,24 @@ from scipy.special import expit
 
 
 # ---------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------
+def _maybe_hide_xaxis(num_items: int, max_items: int = 4) -> None:
+    """
+    Hide x axis label and ticks when the number of items exceeds max_items.
+    """
+    if num_items > max_items:
+        plt.xlabel("")
+        plt.xticks([])
+
+
+def _as_pdf_path(path: Path) -> Path:
+    """Return the same path but with a lowercase .pdf extension."""
+    # Normalize extension to lowercase
+    return path.with_suffix(".pdf")
+
+
+# ---------------------------------------------------------------------
 # Boxplot of individual sample scores
 # ---------------------------------------------------------------------
 def boxplot_individual_sample(
@@ -22,7 +40,7 @@ def boxplot_individual_sample(
 
     Args:
         scores: Array or list of numeric scores.
-        save: If True, save the figure to out_path.
+        save: If True, save the figure as a high resolution PDF to out_path.
         out_path: File path where the figure is saved when save is True.
 
     Returns:
@@ -39,7 +57,11 @@ def boxplot_individual_sample(
     plt.tight_layout()
 
     if save:
-        plt.savefig(out_path, bbox_inches="tight")  # type: ignore[arg-type]
+        assert out_path is not None
+        pdf_path = _as_pdf_path(out_path)
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(pdf_path, bbox_inches="tight", dpi=300)
+
     plt.show()
     plt.close(fig)
 
@@ -57,7 +79,7 @@ def scatterplot_individual_sample(
 
     Args:
         scores: Array or list of numeric scores.
-        save: If True, save the figure to out_path.
+        save: If True, save the figure as a high resolution PDF to out_path.
         out_path: File path where the figure is saved when save is True.
 
     Returns:
@@ -70,12 +92,15 @@ def scatterplot_individual_sample(
     sns.scatterplot(x=np.arange(len(scores)), y=scores, s=80)
     plt.title("Scatterplot of Individual Sample Scores")
     plt.ylabel("Score")
-    plt.xlabel("Index")
-    plt.xticks(rotation=30)
+    plt.xlabel("")
+    plt.xticks([])
     plt.tight_layout()
 
     if save:
-        plt.savefig(out_path, bbox_inches="tight")  # type: ignore[arg-type]
+        assert out_path is not None
+        pdf_path = _as_pdf_path(out_path)
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(pdf_path, bbox_inches="tight", dpi=300)
 
     plt.show()
     plt.close(fig)
@@ -96,12 +121,12 @@ def plot_inv_logit_per_source(
     Expects columns sequence, scores, source.
     Produces:
       - a boxplot of per row probabilities by source
-      - a scatterplot of per source mean logit-transformed probabilities
+      - a scatterplot of per source mean logit transformed probabilities
         mapped back to probability space.
 
     Args:
         df: Input table with columns sequence, scores (probabilities), source.
-        save: If True, save plots into out_dir.
+        save: If True, save plots as high resolution PDFs into out_dir.
         out_dir: Directory to write figures when save is True.
 
     Returns:
@@ -139,31 +164,42 @@ def plot_inv_logit_per_source(
             raise ValueError("out_dir must be provided when save is True")
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        out_dir = None
 
     # boxplot of per row probabilities per source
     fig1 = plt.figure(figsize=(24, 10))
     sns.boxplot(data=df, x="source", y="prob", orientation="vertical")
     plt.title("Per sequence probability distribution per source")
     plt.ylabel("Probability")
-    plt.xticks(rotation=30)
+
+    num_sources = df["source"].nunique()
+    _maybe_hide_xaxis(num_sources)
+
     plt.tight_layout()
 
-    if save:
-        plt.savefig(out_dir / "inv_logit_boxplot.png", bbox_inches="tight")  # type: ignore[operator]
+    if save and out_dir is not None:
+        pdf_path = out_dir / "inv_logit_boxplot.pdf"
+        plt.savefig(pdf_path, bbox_inches="tight", dpi=300)
+
     plt.show()
     plt.close(fig1)
 
     # scatterplot of per source mean logits mapped back to probability
     fig2 = plt.figure(figsize=(24, 10))
     sns.scatterplot(data=summary, x="source", y="inv_logit_mean", s=200)
-    plt.title("Per source mean logit (back-transformed to probability)")
+    plt.title("Per source mean logit (back transformed to probability)")
     plt.ylabel("Mean probability (from mean logit)")
-    plt.xlabel("Source")
-    plt.xticks(rotation=30)
+
+    num_sources_summary = summary["source"].nunique()
+    _maybe_hide_xaxis(num_sources_summary)
+
     plt.tight_layout()
 
-    if save:
-        plt.savefig(out_dir / "inv_logit_mean_scatterplot.png", bbox_inches="tight")  # type: ignore[operator]
+    if save and out_dir is not None:
+        pdf_path = out_dir / "inv_logit_mean_scatterplot.pdf"
+        plt.savefig(pdf_path, bbox_inches="tight", dpi=300)
+
     plt.show()
     plt.close(fig2)
 
@@ -181,12 +217,12 @@ def summarize_and_plot_inv_logit_means(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Summarize mean logits per source for two groups, transform back to probability,
-    and plot a boxplot of the per source back-transformed means.
+    and plot a boxplot of the per source back transformed means.
 
     Args:
         cancer_df: Table for the positive group with columns sequence, scores (prob), source.
         control_df: Table for the negative group with columns sequence, scores (prob), source.
-        save: If True, save the boxplot in out_dir.
+        save: If True, save the boxplot as a high resolution PDF in out_dir.
         out_dir: Directory to write the figure when save is True.
 
     Returns:
@@ -214,7 +250,7 @@ def summarize_and_plot_inv_logit_means(
     n_df["prob"] = n_probs
     n_df["logit"] = np.log(n_probs / (1.0 - n_probs))
 
-    # summarize on logit scale and back-transform
+    # summarize on logit scale and back transform
     c_summary = (
         c_df.groupby("source", as_index=False)["logit"]
         .mean()
@@ -252,21 +288,22 @@ def summarize_and_plot_inv_logit_means(
             raise ValueError("out_dir must be provided when save is True")
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        out_dir = None
 
     plt.figure(figsize=(16, 8))
     sns.boxplot(
         data=summary_long, x="group", y="inv_logit_mean", orientation="vertical"
     )
-    plt.title("Per source mean logit (back-transformed): Cancer vs Control")
+    plt.title("Per source mean logit (back transformed): Cancer vs Control")
     plt.ylabel("Mean probability per source (from mean logit)")
     plt.xlabel("")
     plt.tight_layout()
 
-    if save:
-        plt.savefig(
-            out_dir / "inv_logit_mean_cancer_vs_control_boxplot.png",  # type: ignore[operator]
-            bbox_inches="tight",
-        )
+    if save and out_dir is not None:
+        pdf_path = out_dir / "inv_logit_mean_cancer_vs_control_boxplot.pdf"
+        plt.savefig(pdf_path, bbox_inches="tight", dpi=300)
+
     plt.show()
 
     return summary_long, summary_wide
@@ -291,7 +328,7 @@ def plot_roc_from_summary(
         positive_group: Label to be treated as the positive class.
         score_col: Column containing numeric scores.
         group_col: Column containing group labels.
-        save: If True, save the ROC figure to out_path.
+        save: If True, save the ROC figure as a high resolution PDF to out_path.
         out_path: File path to save the figure when save is True.
 
     Returns:
@@ -342,12 +379,17 @@ def plot_roc_from_summary(
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title(f"ROC curve (positive={positive_group})  AUC={auc_value:.3f}")
+
+    _maybe_hide_xaxis(len(df))
+
     plt.tight_layout()
 
     if save:
-        out_path = Path(out_path)  # type: ignore[arg-type]
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(out_path, bbox_inches="tight")
+        assert out_path is not None
+        pdf_path = _as_pdf_path(out_path)
+        pdf_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(pdf_path, bbox_inches="tight", dpi=300)
+
     plt.show()
     plt.close(fig)
 
