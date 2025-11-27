@@ -6,11 +6,11 @@ import pandas as pd
 
 from tcrgnn import evaluate_model, load_test_file
 
-MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/research_scripts/eight_soft_label_model/best_model.pt"
+MODEL_FILE = "/scratch/project/tcr_ml/gnn_release/MODELS/soft_label_combined.pt"
 t1d_graphs_dir = Path(
-    "/scratch/project/tcr_ml/gnn_release/test_data_v2/val_control/processed"
+    "/scratch/project/tcr_ml/gnn_release/test_data_v2/sle_imgt/processed"
 )
-OUT_CSV = Path("80_val_control_sample_scores.csv")
+OUT_CSV = Path("75_scores/sle_imgt_sample_scores.csv")
 
 
 def process_control_file(control_file: Path):
