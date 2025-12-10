@@ -3,7 +3,7 @@ import pandas as pd
 
 # Load your input file
 df = pd.read_csv(
-    "/scratch/project/tcr_ml/gnn_release/research_scripts/boltz_scores/val_control_sample_scores.csv"
+    "/scratch/project/tcr_ml/gnn_release/research_scripts/bulk+sc_scores/t1d_imgt_sample_scores.csv"
 )  # <- replace with your file path
 
 # Ensure numeric
@@ -31,4 +31,4 @@ inv_logit_mean = inv_logit_mean.rename("Inv Logit Mean")
 metric_df = pd.concat([mean_scores, inv_logit_mean], axis=1).reset_index()
 
 # Save
-metric_df.to_csv("boltz_scores/metric_score/val_control_metric_scores.csv", index=False)
+metric_df.to_csv("bulk+sc_scores/metric_score/t1d_imgt_metric_scores.csv", index=False)

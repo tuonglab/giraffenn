@@ -14,7 +14,7 @@
 
 source /scratch/project/tcr_ml/gnn_env/bin/activate
 MODEL="/scratch/project/tcr_ml/gnn_release/MODELS/soft_label_combined.pt"
-GRAPHS="/scratch/project/tcr_ml/gnn_release/test_data_v2/temp_covid/processed"
-OUTCSV="/scratch/project/tcr_ml/gnn_release/research_scripts/bulk+sc_scores/temp_covid_sample_scores.csv"
+GRAPHS="/scratch/project/tcr_ml/gnn_release/test_data_v2/temp_sle/processed"
+OUTCSV="/scratch/project/tcr_ml/gnn_release/research_scripts/bulk+sc_scores/temp_sle_sample_scores.csv"
 
 python test.py --model-file "$MODEL" --graphs-dir "$GRAPHS" --out-csv "$OUTCSV"
