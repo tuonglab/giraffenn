@@ -3,13 +3,13 @@ import os
 from tcrgnn import TrainConfig, TrainPaths, train_model
 
 cancer_dirs = [
-    "/scratch/project/tcr_ml/gnn_release/dataset_boltz/blood_tissue/processed",
-    "/scratch/project/tcr_ml/gnn_release/dataset_boltz/ccdi/processed",
-    "/scratch/project/tcr_ml/gnn_release/dataset_boltz/scTRB/processed",
-    "/scratch/project/tcr_ml/gnn_release/dataset_boltz/tumor_tissue/processed",
+    "/scratch/project/tcr_ml/gnn_release/dataset_v2/blood_tissue/processed",
+    "/scratch/project/tcr_ml/gnn_release/dataset_v2/ccdi/processed",
+    "/scratch/project/tcr_ml/gnn_release/dataset_v2/scTRB/processed",
+    "/scratch/project/tcr_ml/gnn_release/dataset_v2/tumor_tissue/processed",
 ]
 control_dirs = [
-    "/scratch/project/tcr_ml/gnn_release/dataset_boltz/curated/processed",
+    "/scratch/project/tcr_ml/gnn_release/dataset_v2/curated/processed",
     # "/scratch/project/tcr_ml/gnn_release/dataset_v2/control/processed"
     # "/scratch/project/tcr_ml/gnn_release/dataset_v2/single_cell_control/processed"
 ]
@@ -19,9 +19,9 @@ cfg = TrainConfig(
     batch_size=256,  # demonstration purpose only; use higher epochs for real training
 )  # customise your training configuration here if neccessary
 
-os.makedirs("boltz_soft_label_model", exist_ok=True)
+os.makedirs("loss_label_model", exist_ok=True)
 save_path = TrainPaths(
-    model_dir="boltz_soft_label_model",
+    model_dir="loss_label_model",
     best_name="best_model.pt",
 )
 
