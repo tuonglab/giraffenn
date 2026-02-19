@@ -95,7 +95,9 @@ def test_assemble_graph_undirected_true():
         ],
         dtype=float,
     )
-    assert np.allclose(data.x.numpy(), expected_x)
+
+    expected = torch.as_tensor(expected_x, dtype=data.x.dtype, device=data.x.device)
+    assert torch.allclose(data.x, expected)
 
     # Label is a 1D tensor with single class id
     assert torch.equal(data.y, torch.tensor([7], dtype=torch.long))
@@ -156,6 +158,6 @@ def test_build_graph_from_edgelist_integration_matches_manual_undirected():
 
     # Compare tensors and fields
     assert torch.equal(built.edge_index, manual.edge_index)
-    assert np.allclose(built.x.numpy(), manual.x.numpy())
+    assert torch.allclose(built.x, manual.x)
     assert torch.equal(built.y, manual.y)
     assert built.original_characters == manual.original_characters
