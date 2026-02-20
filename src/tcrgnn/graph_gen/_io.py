@@ -21,7 +21,7 @@ def list_edge_txts(root: Path | str) -> list[Path]:
 
 def parse_edges(edge_file: Path | str) -> list[list[str]]:
     edge_file = Path(edge_file)
-    with edge_file.open() as f:
+    with edge_file.open(encoding="utf-8", newline="") as f:
         return [line.strip().split() for line in f if line.strip()]
 
 
