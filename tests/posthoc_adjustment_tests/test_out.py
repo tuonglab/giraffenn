@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from scipy.special import expit
 
-from tcrgnn.posthoc_adjustment.api import summary_scores, transform_scores
+from graffit.posthoc_adjustment.api import summary_scores, transform_scores
 
 
 class DummyLoaderWithLen:
@@ -40,13 +40,13 @@ def test_transform_scores_applies_all_adjustments(monkeypatch):
         np.testing.assert_array_equal(blended, np.array([0.3, 0.7]))
         return np.array([0.31, 0.71])
 
-    monkeypatch.setattr("tcrgnn.posthoc_adjustment.api.add_row_frequencies", add_mock)
+    monkeypatch.setattr("graffit.posthoc_adjustment.api.add_row_frequencies", add_mock)
     monkeypatch.setattr(
-        "tcrgnn.posthoc_adjustment.api.combined_score_sample_blend",
+        "graffit.posthoc_adjustment.api.combined_score_sample_blend",
         fake_blend,
     )
     monkeypatch.setattr(
-        "tcrgnn.posthoc_adjustment.api.combined_score_distribution_aware_simple",
+        "graffit.posthoc_adjustment.api.combined_score_distribution_aware_simple",
         fake_distribution,
     )
 

@@ -1,20 +1,23 @@
 [project]
-name = "tcrgnn"
+name = "graffit"
 version = "0.1.0"
 description = "GNN TCR Python Package"
 authors = [{ name = "Amos Choo", email = "amos.choo@uq.edu.au" }]
 dependencies = [
-    "torch_geometric==2.5.3",
-    "matplotlib",
-    "seaborn",
-    "networkx",
-    "biopython",
-    "scipy==1.16.2",
-    "torch==2.3.1",
-    "torchvision==0.18.1",
-    "torchaudio==2.3.1",
-    "numpy<=2.3.1",
-    "pandas<=2.3.3"
+    "torch>=2.7,<2.8",
+    "torchvision>=0.22,<0.23",
+    "torchaudio>=2.7,<2.8",
+
+    "torch_geometric>=2.7,<2.8",
+
+    "numpy>=2,<3.0",
+    "scipy>=1.16,<2.0",
+    "pandas>=2.2,<3.1",
+
+    "matplotlib>=3.10",
+    "seaborn>=0.13",
+    "networkx>=3.6",
+    "biopython>=1.86",
 ]
 
 requires-python = ">=3.11"
@@ -62,7 +65,7 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--maxfail=1",
-    "--cov=tcrgnn",
+    "--cov=graffit",
     "--cov-report=term-missing",
 ]
 

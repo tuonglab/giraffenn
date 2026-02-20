@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from torch_geometric.data import Data
 
-from tcrgnn.graph_gen.api import (
+from graffit.graph_gen.api import (
     generate_graph_from_edge_file,
     generate_graphs_from_edge_dir,
 )
@@ -58,13 +58,14 @@ def test_generate_graphs_from_edge_dir_calls_dependencies_in_sorted_order(
         return Data(name="graph_" + edgelist[0][0])
 
     # Patch the internal imports used by the module under test
-    import tcrgnn.graph_gen._io  # noqa: F401  - update if needed
+    import graffit.graph_gen._io  # noqa: F401  - update if needed
 
     # Patch where the functions are looked up by the module under test
-    monkeypatch.setattr("tcrgnn.graph_gen.api.list_edge_txts", fake_list_edge_txts)
-    monkeypatch.setattr("tcrgnn.graph_gen.api.parse_edges", fake_parse_edges)
+    monkeypatch.setattr("graffit.graph_gen.api.list_edge_txts", fake_list_edge_txts)
+    monkeypatch.setattr("graffit.graph_gen.api.parse_edges", fake_parse_edges)
     monkeypatch.setattr(
-        "tcrgnn.graph_gen.api.build_graph_from_edgelist", fake_build_graph_from_edgelist
+        "graffit.graph_gen.api.build_graph_from_edgelist",
+        fake_build_graph_from_edgelist,
     )
 
     # Run
@@ -109,9 +110,9 @@ def test_generate_graph_from_edge_file_calls_parse_then_builder(monkeypatch, tmp
 
     # IMPORTANT: patch where the functions are *looked up* (the api module),
     # not where they are defined elsewhere.
-    monkeypatch.setattr("tcrgnn.graph_gen.api.parse_edges", fake_parse_edges)
+    monkeypatch.setattr("graffit.graph_gen.api.parse_edges", fake_parse_edges)
     monkeypatch.setattr(
-        "tcrgnn.graph_gen.api.build_graph_from_edgelist",
+        "graffit.graph_gen.api.build_graph_from_edgelist",
         fake_build_graph_from_edgelist,
     )
 
@@ -160,14 +161,15 @@ def test_generate_graphs_from_edge_dir_save(monkeypatch, tmp_path):
     def fake_save_graphs_to_disk(graphs, file):
         calls["save"] = {"graphs": graphs, "file": file}
 
-    monkeypatch.setattr("tcrgnn.graph_gen.api.parse_edges", fake_parse_edges)
+    monkeypatch.setattr("graffit.graph_gen.api.parse_edges", fake_parse_edges)
     monkeypatch.setattr(
-        "tcrgnn.graph_gen.api.build_graph_from_edgelist", fake_build_graph_from_edgelist
+        "graffit.graph_gen.api.build_graph_from_edgelist",
+        fake_build_graph_from_edgelist,
     )
     monkeypatch.setattr(
-        "tcrgnn.graph_gen.api.save_graphs_to_disk", fake_save_graphs_to_disk
+        "graffit.graph_gen.api.save_graphs_to_disk", fake_save_graphs_to_disk
     )
-    monkeypatch.setattr("tcrgnn.graph_gen.api.list_edge_txts", lambda d: [f1, f2])
+    monkeypatch.setattr("graffit.graph_gen.api.list_edge_txts", lambda d: [f1, f2])
 
     out = generate_graphs_from_edge_dir(
         edge_dir=tmp_path,

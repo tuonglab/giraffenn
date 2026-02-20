@@ -4,7 +4,7 @@ from pathlib import Path
 
 import torch
 
-from tcrgnn.models.gatv2 import GATv2
+from graffit.models.gatv2 import GATv2
 
 from ..utils._data_loading import load_train_data
 from ._config import TrainConfig, TrainPaths

@@ -2,12 +2,12 @@
 #
 # For the full list of built-in configuration values, see:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-# Path setup — make sure your tcrgnn package is importable
+# Path setup — make sure your graffit package is importable
 import os
 import sys
 
 # -- Project information -----------------------------------------------------
-project = "tcrgnn"
+project = "graffit"
 copyright = "2025, Amos Choo"
 author = "Amos Choo"
 release = "0.1.0"
@@ -26,7 +26,7 @@ source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 sys.path.insert(0, os.path.abspath("../../"))  # adjust if needed
 
 # -- Sphinx-apidoc configuration --------------------------------------------
-apidoc_module_dir = "../../tcrgnn"
+apidoc_module_dir = "../../graffit"
 apidoc_output_dir = "api"
 apidoc_excluded_paths = ["tests"]
 apidoc_separate_modules = True
