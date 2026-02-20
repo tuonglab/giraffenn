@@ -1,4 +1,4 @@
-tcrgnn documentation
+graffit documentation
 ====================
 
 .. include:: ../../README.md
@@ -15,15 +15,15 @@ tcrgnn documentation
    :maxdepth: 2
    :caption: Contents:
 
-   api/tcrgnn.edge_gen
-   api/tcrgnn.evaluate
-   api/tcrgnn.fold_backend
-   api/tcrgnn.graph_gen
-   api/tcrgnn.models
-   api/tcrgnn.plotting
-   api/tcrgnn.posthoc_adjustment
-   api/tcrgnn.training
-   api/tcrgnn.utils
+   api/graffit.edge_gen
+   api/graffit.evaluate
+   api/graffit.fold_backend
+   api/graffit.graph_gen
+   api/graffit.models
+   api/graffit.plotting
+   api/graffit.posthoc_adjustment
+   api/graffit.training
+   api/graffit.utils
 
 Indices and tables
 ==================
