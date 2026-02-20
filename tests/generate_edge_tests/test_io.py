@@ -1,4 +1,4 @@
-from tcrgnn.edge_gen import _io as io_mod
+from graffit.edge_gen import _io as io_mod
 
 
 def test_iter_target_pdbs_filters_by_token_patterns(tmp_path):

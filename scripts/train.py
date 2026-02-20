@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from tcrgnn.utils.device import get_device, set_seed
+from graffit.utils.device import get_device, set_seed
 
-from tcrgnn import GATv2, TrainConfig, TrainPaths, train
-from tcrgnn.utils._data_loading import load_train_data
+from graffit import GATv2, TrainConfig, TrainPaths, train
+from graffit.utils._data_loading import load_train_data
 
 
 def run():

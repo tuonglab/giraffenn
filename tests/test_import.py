@@ -1,4 +1,4 @@
 def test_can_import_package():
-    import tcrgnn
+    import graffit
 
-    assert hasattr(tcrgnn, "__version__") or True
+    assert hasattr(graffit, "__version__") or True

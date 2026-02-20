@@ -5,8 +5,8 @@ import pytest
 import torch
 from torch_geometric.data import Data
 
-from tcrgnn.graph_gen._io import list_edge_txts, parse_edges
-from tcrgnn.graph_gen.api import save_graphs_to_disk
+from graffit.graph_gen._io import list_edge_txts, load_graphs_from_disk, parse_edges
+from graffit.graph_gen.api import save_graphs_to_disk
 
 
 def write(p: Path, text: str = "") -> Path:
@@ -113,11 +113,9 @@ def test_save_graphs_to_disk_roundtrip(tmp_path):
     # File should exist
     assert out_file.is_file()
 
-    # Load back with torch.load and compare
-    loaded = torch.load(str(out_file))
-    assert isinstance(loaded, list)
-    assert len(loaded) == 1
-    assert isinstance(loaded[0], Data)
+    loaded = load_graphs_from_disk(out_file)
+    assert torch.allclose(loaded[0].x, graphs[0].x)
+    assert loaded[0].y.item() == graphs[0].y.item()
 
     # Check attributes survived
     assert loaded[0].x.shape == (3, 4)

@@ -1,7 +1,7 @@
 # test_gatv2.py
 import torch
 
-from tcrgnn.models.gatv2 import GATv2  # update this import to your actual path
+from graffit.models.gatv2 import GATv2  # update this import to your actual path
 
 
 def make_toy_graph(num_nodes=5, nfeat=8):

@@ -5,8 +5,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tcrgnn.posthoc_adjustment._clonal_frequency import add_row_frequencies
-from tcrgnn.posthoc_adjustment._transform import (
+from graffit.posthoc_adjustment._clonal_frequency import add_row_frequencies
+from graffit.posthoc_adjustment._transform import (
     combined_score_distribution_aware_simple,
     combined_score_sample_blend,
 )

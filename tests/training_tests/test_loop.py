@@ -4,8 +4,8 @@ import torch
 from torch_geometric.data import Data
 from torch_geometric.nn import global_mean_pool
 
-from tcrgnn.training._config import TrainConfig, TrainPaths
-from tcrgnn.training._loop import train
+from graffit.training._config import TrainConfig, TrainPaths
+from graffit.training._loop import train
 
 
 # Graph-level classifier: pool by batch to get one embedding per graph

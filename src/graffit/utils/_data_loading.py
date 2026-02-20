@@ -3,29 +3,75 @@ from __future__ import annotations
 import os
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 import torch
 from torch_geometric.data import Data
 
 
+def _is_pyg_payload(obj: Any) -> bool:
+    """True if obj looks like a list of dict payloads representing PyG Data."""
+    if not isinstance(obj, list):
+        return False
+    if len(obj) == 0:
+        return True  # empty list is acceptable
+    if not isinstance(obj[0], dict):
+        return False
+    # Heuristic keys typical of Data objects
+    return "x" in obj[0] or "edge_index" in obj[0] or "y" in obj[0]
+
+
+def _payload_to_data_list(payload: list[dict[str, Any]]) -> list[Data]:
+    out: list[Data] = []
+    for d in payload:
+        # drop reserved keys if you add any later
+        d2 = {k: v for k, v in d.items() if not k.startswith("_")}
+        out.append(Data(**d2))
+    return out
+
+
 def load_graphs(
     file: str | Path,
     map_location: str | torch.device = "cpu",
+    *,
+    allow_unsafe_legacy: bool = True,
 ) -> list[Data] | Iterable[Data] | torch.Tensor:
     """
     Load a serialized graph bundle from disk.
 
+    Robust behavior across PyTorch/PyG upgrades:
+    - First attempts a "safe" load (weights_only=True semantics).
+    - If that fails and allow_unsafe_legacy=True, falls back to unsafe pickle
+      loading for legacy files that directly saved PyG Data objects.
+
     Args:
-        file: Path to a serialized graph file, typically produced by PyTorch.
+        file: Path to a serialized graph file.
         map_location: Passed through to torch.load.
+        allow_unsafe_legacy: If True, permits loading legacy pickled objects
+            by setting weights_only=False on fallback. Only enable for trusted files.
 
     Returns:
-        Whatever object was stored in the file, commonly:
+        Commonly:
             - list[Data]
             - iterable of Data
             - PyTorch tensor
     """
-    return torch.load(str(file), map_location=map_location)
+    file = Path(file)
+
+    # 1) Safe path (PyTorch default weights_only=True in >=2.6)
+    try:
+        obj = torch.load(str(file), map_location=map_location)
+    except Exception:
+        # 2) Legacy fallback for trusted files
+        if not allow_unsafe_legacy:
+            raise
+        obj = torch.load(str(file), map_location=map_location, weights_only=False)
+
+    # If the file used the "safe payload" format, reconstruct Data objects:
+    if _is_pyg_payload(obj):
+        return _payload_to_data_list(obj)  # type: ignore[arg-type]
+
+    return obj
 
 
 def load_train_data(

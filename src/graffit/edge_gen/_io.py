@@ -5,7 +5,7 @@ from pathlib import Path
 from Bio.PDB import PDBParser
 from Bio.PDB.PDBExceptions import PDBConstructionException
 
-LOG = logging.getLogger("tcrgnn.edgegen.io")
+LOG = logging.getLogger("graffit.edgegen.io")
 
 
 def iter_target_pdbs(root: Path | str, patterns: tuple[str, ...]) -> list[Path | str]:
