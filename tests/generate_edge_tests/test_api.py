@@ -5,8 +5,11 @@ from unittest.mock import patch
 
 import pytest
 
-from graffit.edge_gen import api
-from graffit.edge_gen.api import generate_edges_from_pdb_file, write_edges_file_for_pdb
+from giraffenn.edge_gen import api
+from giraffenn.edge_gen.api import (
+    generate_edges_from_pdb_file,
+    write_edges_file_for_pdb,
+)
 
 
 def test_write_edges_file_for_pdb_success(tmp_path, monkeypatch):
@@ -210,9 +213,9 @@ def test_generate_edges_from_pdb_file_raises_value_error_for_non_pdb(tmp_path: P
 
 class TestWriteEdgesFileForPDB(unittest.TestCase):
     @patch(
-        "graffit.edge_gen.api.edges_text", return_value=""
+        "giraffenn.edge_gen.api.edges_text", return_value=""
     )  # Mock edges_text to return empty
-    @patch("graffit.edge_gen.api.load_pdb_structure")  # Mock load function
+    @patch("giraffenn.edge_gen.api.load_pdb_structure")  # Mock load function
     def test_empty_edges_logs_warning_and_skips_write(self, mock_load, mock_edges):
         pdb_path = Path("test.pdb")
         out_dir = Path("out")

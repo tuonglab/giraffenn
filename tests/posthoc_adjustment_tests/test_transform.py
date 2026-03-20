@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from graffit.posthoc_adjustment._transform import (
+from giraffenn.posthoc_adjustment._transform import (
     _fraction_to_percentile,
     _midranks_for_ties,
     _plotting_position,

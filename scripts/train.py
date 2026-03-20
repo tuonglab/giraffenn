@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from graffit.utils.device import get_device, set_seed
+from giraffenn.utils.device import get_device, set_seed
 
-from graffit import GATv2, TrainConfig, TrainPaths, train
-from graffit.utils._data_loading import load_train_data
+from giraffenn import GATv2, TrainConfig, TrainPaths, train
+from giraffenn.utils._data_loading import load_train_data
 
 
 def run():

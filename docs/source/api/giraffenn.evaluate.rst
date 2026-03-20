@@ -1,13 +1,13 @@
-graffit.plotting package
+giraffenn.evaluate package
 ========================
 
 Submodules
 ----------
 
-graffit.plotting.charts module
-------------------------------
+giraffenn.evaluate.api module
+---------------------------
 
-.. automodule:: graffit.plotting.charts
+.. automodule:: giraffenn.evaluate.api
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ graffit.plotting.charts module
 Module contents
 ---------------
 
-.. automodule:: graffit.plotting
+.. automodule:: giraffenn.evaluate
    :members:
    :undoc-members:
    :show-inheritance:

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from graffit.utils import _common_utils as io_mod
+from giraffenn.utils import _common_utils as io_mod
 
 
 def test_is_within_directory_true_and_false(tmp_path):

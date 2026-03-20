@@ -4,7 +4,7 @@
 
 For non-developer
 
-`pip install graffit`
+`pip install giraffenn`
 
 For developer
 

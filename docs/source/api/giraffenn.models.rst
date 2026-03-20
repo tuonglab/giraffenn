@@ -1,13 +1,13 @@
-graffit.models package
+giraffenn.models package
 ======================
 
 Submodules
 ----------
 
-graffit.models.gatv2 module
+giraffenn.models.gatv2 module
 ---------------------------
 
-.. automodule:: graffit.models.gatv2
+.. automodule:: giraffenn.models.gatv2
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ graffit.models.gatv2 module
 Module contents
 ---------------
 
-.. automodule:: graffit.models
+.. automodule:: giraffenn.models
    :members:
    :undoc-members:
    :show-inheritance:

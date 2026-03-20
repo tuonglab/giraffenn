@@ -1,7 +1,7 @@
-graffit
+giraffenn
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   graffit
+   giraffenn

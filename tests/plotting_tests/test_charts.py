@@ -10,7 +10,7 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 
-from graffit.plotting.charts import (
+from giraffenn.plotting.charts import (
     _as_pdf_path,
     _maybe_hide_xaxis,
     boxplot_individual_sample,

@@ -3,7 +3,7 @@ import math
 from pathlib import Path
 from unittest import mock
 
-import graffit.edge_gen._generate_edge as _generate_edge
+import giraffenn.edge_gen._generate_edge as _generate_edge
 
 
 def test_load_pdb_structure_success(monkeypatch):

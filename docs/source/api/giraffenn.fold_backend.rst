@@ -1,10 +1,10 @@
-graffit.fold\_backend package
+giraffenn.fold\_backend package
 =============================
 
 Module contents
 ---------------
 
-.. automodule:: graffit.fold_backend
+.. automodule:: giraffenn.fold_backend
    :members:
    :undoc-members:
    :show-inheritance:

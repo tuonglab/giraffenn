@@ -2,12 +2,12 @@
 #
 # For the full list of built-in configuration values, see:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-# Path setup — make sure your graffit package is importable
+# Path setup — make sure your giraffenn package is importable
 import os
 import sys
 
 # -- Project information -----------------------------------------------------
-project = "graffit"
+project = "giraffenn"
 copyright = "2025, Amos Choo"
 author = "Amos Choo"
 release = "0.1.0"
@@ -23,10 +23,10 @@ extensions = [
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 
-sys.path.insert(0, os.path.abspath("../../"))  # adjust if needed
+sys.path.insert(0, os.path.abspath("../../src"))  # adjust if needed
 
 # -- Sphinx-apidoc configuration --------------------------------------------
-apidoc_module_dir = "../../graffit"
+apidoc_module_dir = "../../src/giraffenn"
 apidoc_output_dir = "api"
 apidoc_excluded_paths = ["tests"]
 apidoc_separate_modules = True

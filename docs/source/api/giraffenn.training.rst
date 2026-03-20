@@ -1,13 +1,13 @@
-graffit.evaluate package
+giraffenn.training package
 ========================
 
 Submodules
 ----------
 
-graffit.evaluate.api module
+giraffenn.training.api module
 ---------------------------
 
-.. automodule:: graffit.evaluate.api
+.. automodule:: giraffenn.training.api
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ graffit.evaluate.api module
 Module contents
 ---------------
 
-.. automodule:: graffit.evaluate
+.. automodule:: giraffenn.training
    :members:
    :undoc-members:
    :show-inheritance:

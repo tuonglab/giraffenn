@@ -1,21 +1,21 @@
-graffit.edge\_gen package
+giraffenn.edge\_gen package
 =========================
 
 Submodules
 ----------
 
-graffit.edge\_gen.api module
+giraffenn.edge\_gen.api module
 ----------------------------
 
-.. automodule:: graffit.edge_gen.api
+.. automodule:: giraffenn.edge_gen.api
    :members:
    :undoc-members:
    :show-inheritance:
 
-graffit.edge\_gen.cli module
+giraffenn.edge\_gen.cli module
 ----------------------------
 
-.. automodule:: graffit.edge_gen.cli
+.. automodule:: giraffenn.edge_gen.cli
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ graffit.edge\_gen.cli module
 Module contents
 ---------------
 
-.. automodule:: graffit.edge_gen
+.. automodule:: giraffenn.edge_gen
    :members:
    :undoc-members:
    :show-inheritance:

@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from graffit.posthoc_adjustment._clonal_frequency import add_row_frequencies
+from giraffenn.posthoc_adjustment._clonal_frequency import add_row_frequencies
 
 
 def write_model(tmp_path, rows):

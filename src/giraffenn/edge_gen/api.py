@@ -8,7 +8,7 @@ from ..utils._common_utils import cleanup, make_archive, safe_extract_tar_gz, tm
 from . import _io as io
 from ._generate_edge import edges_text, load_pdb_structure
 
-LOG = logging.getLogger("graffit.edgegen")
+LOG = logging.getLogger("giraffenn.edgegen")
 
 
 @dataclass

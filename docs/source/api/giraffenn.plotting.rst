@@ -1,13 +1,13 @@
-graffit.training package
+giraffenn.plotting package
 ========================
 
 Submodules
 ----------
 
-graffit.training.api module
----------------------------
+giraffenn.plotting.charts module
+------------------------------
 
-.. automodule:: graffit.training.api
+.. automodule:: giraffenn.plotting.charts
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ graffit.training.api module
 Module contents
 ---------------
 
-.. automodule:: graffit.training
+.. automodule:: giraffenn.plotting
    :members:
    :undoc-members:
    :show-inheritance:

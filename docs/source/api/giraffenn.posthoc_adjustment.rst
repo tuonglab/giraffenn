@@ -1,13 +1,13 @@
-graffit.posthoc\_adjustment package
+giraffenn.posthoc\_adjustment package
 ===================================
 
 Submodules
 ----------
 
-graffit.posthoc\_adjustment.api module
+giraffenn.posthoc\_adjustment.api module
 --------------------------------------
 
-.. automodule:: graffit.posthoc_adjustment.api
+.. automodule:: giraffenn.posthoc_adjustment.api
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ graffit.posthoc\_adjustment.api module
 Module contents
 ---------------
 
-.. automodule:: graffit.posthoc_adjustment
+.. automodule:: giraffenn.posthoc_adjustment
    :members:
    :undoc-members:
    :show-inheritance:

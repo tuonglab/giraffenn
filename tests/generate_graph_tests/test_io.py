@@ -5,8 +5,8 @@ import pytest
 import torch
 from torch_geometric.data import Data
 
-from graffit.graph_gen._io import list_edge_txts, load_graphs_from_disk, parse_edges
-from graffit.graph_gen.api import save_graphs_to_disk
+from giraffenn.graph_gen._io import list_edge_txts, load_graphs_from_disk, parse_edges
+from giraffenn.graph_gen.api import save_graphs_to_disk
 
 
 def write(p: Path, text: str = "") -> Path:

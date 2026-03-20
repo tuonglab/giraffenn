@@ -1,21 +1,21 @@
-graffit.graph\_gen package
+giraffenn.graph\_gen package
 ==========================
 
 Submodules
 ----------
 
-graffit.graph\_gen.api module
+giraffenn.graph\_gen.api module
 -----------------------------
 
-.. automodule:: graffit.graph_gen.api
+.. automodule:: giraffenn.graph_gen.api
    :members:
    :undoc-members:
    :show-inheritance:
 
-graffit.graph\_gen.encodings module
+giraffenn.graph\_gen.encodings module
 -----------------------------------
 
-.. automodule:: graffit.graph_gen.encodings
+.. automodule:: giraffenn.graph_gen.encodings
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ graffit.graph\_gen.encodings module
 Module contents
 ---------------
 
-.. automodule:: graffit.graph_gen
+.. automodule:: giraffenn.graph_gen
    :members:
    :undoc-members:
    :show-inheritance:

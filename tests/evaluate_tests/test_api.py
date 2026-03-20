@@ -4,7 +4,7 @@ import pytest
 import torch
 from torch_geometric.data import Data
 
-from graffit.evaluate import api
+from giraffenn.evaluate import api
 
 
 @pytest.fixture

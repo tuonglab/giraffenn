@@ -1,4 +1,4 @@
-graffit documentation
+giraffenn documentation
 ====================
 
 .. include:: ../../README.md
@@ -15,15 +15,15 @@ graffit documentation
    :maxdepth: 2
    :caption: Contents:
 
-   api/graffit.edge_gen
-   api/graffit.evaluate
-   api/graffit.fold_backend
-   api/graffit.graph_gen
-   api/graffit.models
-   api/graffit.plotting
-   api/graffit.posthoc_adjustment
-   api/graffit.training
-   api/graffit.utils
+   api/giraffenn.edge_gen
+   api/giraffenn.evaluate
+   api/giraffenn.fold_backend
+   api/giraffenn.graph_gen
+   api/giraffenn.models
+   api/giraffenn.plotting
+   api/giraffenn.posthoc_adjustment
+   api/giraffenn.training
+   api/giraffenn.utils
 
 Indices and tables
 ==================

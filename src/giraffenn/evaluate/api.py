@@ -1,11 +1,11 @@
 from torch_geometric.data import Data
 
-from graffit.evaluate._predict import predict_on_graph_list
-from graffit.evaluate._utils import (
+from giraffenn.evaluate._predict import predict_on_graph_list
+from giraffenn.evaluate._utils import (
     get_device,
     load_trained_model,
 )
-from graffit.models.gatv2 import GATv2
+from giraffenn.models.gatv2 import GATv2
 
 
 def evaluate_model(model_file: str, graphs: list[Data], device=None):

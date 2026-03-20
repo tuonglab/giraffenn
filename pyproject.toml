@@ -1,5 +1,5 @@
 [project]
-name = "graffit"
+name = "giraffenn"
 version = "0.1.0"
 description = "GNN TCR Python Package"
 authors = [{ name = "Amos Choo", email = "amos.choo@uq.edu.au" }]
@@ -65,7 +65,7 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "--maxfail=1",
-    "--cov=graffit",
+    "--cov=giraffenn",
     "--cov-report=term-missing",
 ]
 

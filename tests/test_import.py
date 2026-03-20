@@ -1,4 +1,4 @@
 def test_can_import_package():
-    import graffit
+    import giraffenn
 
-    assert hasattr(graffit, "__version__") or True
+    assert hasattr(giraffenn, "__version__") or True

@@ -1,10 +1,10 @@
-graffit.utils package
+giraffenn.utils package
 =====================
 
 Module contents
 ---------------
 
-.. automodule:: graffit.utils
+.. automodule:: giraffenn.utils
    :members:
    :undoc-members:
    :show-inheritance:

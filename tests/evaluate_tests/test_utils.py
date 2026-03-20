@@ -3,7 +3,7 @@ from unittest import mock
 import torch
 from torch_geometric.data import Data
 
-from graffit.evaluate import _utils
+from giraffenn.evaluate import _utils
 
 
 def test_get_device_returns_cuda_when_available(monkeypatch):
