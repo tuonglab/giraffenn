@@ -1,6 +1,6 @@
 [project]
 name = "giraffenn"
-version = "1.0.0"
+version = "1.0.1"
 description = "GNN TCR Python Package"
 authors = [{ name = "Amos Choo", email = "amos.choo@uq.edu.au" }]
 classifiers = [
