@@ -1,6 +1,6 @@
 [project]
 name = "giraffenn"
-version = "0.1.0"
+version = "1.0.0"
 description = "GNN TCR Python Package"
 authors = [{ name = "Amos Choo", email = "amos.choo@uq.edu.au" }]
 classifiers = [
@@ -13,10 +13,6 @@ classifiers = [
 keywords = ["gnn", "tcr", "bioinformatics", "machine-learning"]
 urls = { Homepage = "https://github.com/tuonglab/gnn_release", Documentation = "https://gnn-release.readthedocs.io/en/latest/", Repository = "https://github.com/tuonglab/gnn_release", Issues = "https://github.com/tuonglab/gnn_release/issues" }
 dependencies = [
-    "torch>=2.7,<2.8",
-    "torchvision>=0.22,<0.23",
-    "torchaudio>=2.7,<2.8",
-
     "torch_geometric>=2.7,<2.8",
 
     "numpy>=2,<3.0",
