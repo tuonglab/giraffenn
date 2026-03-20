@@ -2,16 +2,24 @@
 ![Logo](giraffenn.png)
 ## Installation
 
-For non-developer
+First install PyTorch for your platform. https://pytorch.org/get-started/locally/. This software is GPU-enabled
 
-`pip install giraffenn`
+Pytorch Version to Install:
 
-For developer
+    "torch>=2.7,<2.8",
+    "torchvision>=0.22,<0.23",
+    "torchaudio>=2.7,<2.8",
+
+Then install giraffenn:
+
+```bash
+pip install giraffenn
+```
+
+
+### For developers
+```bash
 
 `pip install pdm`
 `pdm install -E`
 `pytest`
-
-## NOTE:
-
-Install torch specific version yourself here, see pyproject.toml for the exact numbering: https://pytorch.org/get-started/locally/

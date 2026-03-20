@@ -3,6 +3,15 @@ name = "giraffenn"
 version = "0.1.0"
 description = "GNN TCR Python Package"
 authors = [{ name = "Amos Choo", email = "amos.choo@uq.edu.au" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+]
+keywords = ["gnn", "tcr", "bioinformatics", "machine-learning"]
+urls = { Homepage = "https://github.com/tuonglab/gnn_release", Documentation = "https://gnn-release.readthedocs.io/en/latest/", Repository = "https://github.com/tuonglab/gnn_release", Issues = "https://github.com/tuonglab/gnn_release/issues" }
 dependencies = [
     "torch>=2.7,<2.8",
     "torchvision>=0.22,<0.23",
@@ -35,7 +44,7 @@ distribution = true
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-exclude = ["old_folders","*.ipynb"]
+exclude = ["old_folders", "*.ipynb"]
 
 # Enable Ruff formatting (replaces Black)
 [tool.ruff.format]
@@ -87,20 +96,20 @@ dev = [
 ]
 
 docs = [
-  "sphinx>=8",
-  "furo",
-  "sphinx-copybutton",
-  "sphinx-autobuild",
-  "sphinx_rtd_theme",
-  "myst-nb"
+    "sphinx>=8",
+    "furo",
+    "sphinx-copybutton",
+    "sphinx-autobuild",
+    "sphinx_rtd_theme",
+    "myst-nb",
 ]
 
 [project.optional-dependencies]
 docs = [
-  "sphinx>=8",
-  "furo",
-  "sphinx-copybutton",
-  "sphinx-autobuild",
-  "sphinx_rtd_theme",
-  "myst-nb"
+    "sphinx>=8",
+    "furo",
+    "sphinx-copybutton",
+    "sphinx-autobuild",
+    "sphinx_rtd_theme",
+    "myst-nb",
 ]
