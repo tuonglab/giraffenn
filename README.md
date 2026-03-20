@@ -1,5 +1,5 @@
 # Utilising Machine Learning to classify cancer using Paedatric Immune Repertoire
-
+![Logo](giraffenn.png)
 ## Installation
 
 For non-developer

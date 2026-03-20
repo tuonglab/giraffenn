@@ -36,6 +36,7 @@ exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = "sphinx_rtd_theme"
+html_logo = "_static/giraffenn.png"
 html_static_path = ["_static"]
 
 nb_execution_mode = "off"  # do not execute notebooks during the build
