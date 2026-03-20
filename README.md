@@ -1,5 +1,5 @@
 # Utilising Machine Learning to classify cancer using Paedatric Immune Repertoire
-![Logo](giraffenn.png)
+![Logo](https://raw.githubusercontent.com/tuonglab/gnn_release/main/giraffenn.png)
 ## Installation
 
 First install PyTorch for your platform. https://pytorch.org/get-started/locally/. This software is GPU-enabled
